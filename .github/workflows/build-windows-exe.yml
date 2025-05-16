@@ -1,0 +1,64 @@
+
+name: Build Python EXE for Windows
+
+on:
+  push:
+    tags: # 当你推送一个 tag (例如 v1.0, v1.0.1) 时触发
+      - 'v*' # 匹配所有以 'v' 开头的 tag
+  workflow_dispatch: # 允许手动从 Actions 页面触发
+
+jobs:
+  build-exe:
+    runs-on: windows-latest # 必须使用 Windows Runner 来构建 .exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # 检出你的代码
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' # 指定你项目使用的 Python 版本
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          # 如果你有 requirements.txt 文件:
+           pip install -r requirements.txt
+
+      - name: Build EXE with PyInstaller
+        # 确保你的主脚本名、应用名、图标路径正确
+        # 如果有其他数据文件，添加 --add-data "source:destination"
+        # 例如: --add-data "assets:assets"
+        run: |
+          pyinstaller --name 采购询价 `
+            --onefile `
+            --windowed `
+            procurement.py
+        # 注意：PowerShell 中换行符是反引号 `
+        # 如果你的脚本是命令行工具，去掉 --windowed
+        # PyInstaller 会在 dist/ 目录下生成 YourAppName.exe
+
+      - name: Upload EXE as Release Asset
+        # 这一步只有在 'on: push: tags:' 触发时才真正有意义，
+        # 因为它需要一个已存在的 Release。
+        # 对于手动触发或推送到分支，你可能更希望使用 actions/upload-artifact
+        # 这里我们假设你创建了 tag 来触发 Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }} # GitHub 自动提供的 token
+          file: dist/采购询价.exe # PyInstaller 生成的 .exe 文件路径
+          asset_name: 采购询价-Windows-v${{ github.ref_name }}.exe # 在 Release 中显示的文件名
+          tag: ${{ github.ref_name }} # 使用触发 workflow 的 tag
+          overwrite: true # 如果同名 asset 已存在，则覆盖
+          # body: "Automated EXE build for Windows." # 可选的 Release body 内容
+
+      - name: Upload EXE as Artifact (for non-tag pushes or manual runs)
+        # 如果不是通过 tag 触发，可以将 .exe 作为构建产物上传，方便测试下载
+        if: "!startsWith(github.ref, 'refs/tags/')"
+        uses: actions/upload-artifact@v4
+        with:
+          name: 采购询价-Windows-EXE
+          path: dist/采购询价.exe
