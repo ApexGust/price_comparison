@@ -7,6 +7,9 @@ on:
       - 'v*' # 匹配所有以 'v' 开头的 tag
   workflow_dispatch: # 允许手动从 Actions 页面触发
 
+permissions:
+  contents: write # <--- 添加这一行
+
 jobs:
   build-exe:
     runs-on: windows-latest # 必须使用 Windows Runner 来构建 .exe
