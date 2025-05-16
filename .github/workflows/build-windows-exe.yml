@@ -35,7 +35,7 @@ jobs:
         # 如果有其他数据文件，添加 --add-data "source:destination"
         # 例如: --add-data "assets:assets"
         run: |
-          pyinstaller --name 采购询价 `
+          pyinstaller --name PriceComparison `
             --onefile `
             --windowed `
             procurement.py
@@ -52,8 +52,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }} # GitHub 自动提供的 token
-          file: dist/采购询价.exe # PyInstaller 生成的 .exe 文件路径
-          asset_name: 采购询价-Windows-v${{ github.ref_name }}.exe # 在 Release 中显示的文件名
+          file: dist/PriceComparison.exe # PyInstaller 生成的 .exe 文件路径
+          asset_name: PriceComparison-Windows-${{ github.ref_name }}.exe # 在 Release 中显示的文件名
           tag: ${{ github.ref_name }} # 使用触发 workflow 的 tag
           overwrite: true # 如果同名 asset 已存在，则覆盖
           # body: "Automated EXE build for Windows." # 可选的 Release body 内容
@@ -63,5 +63,5 @@ jobs:
         if: "!startsWith(github.ref, 'refs/tags/')"
         uses: actions/upload-artifact@v4
         with:
-          name: 采购询价-Windows-EXE
-          path: dist/采购询价.exe
+          name: PriceComparison-Windows-EXE
+          path: dist/PriceComparison.exe
